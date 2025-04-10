@@ -7,6 +7,6 @@
 -To push project to Github:
    1.use commnad : git add . (add all file) Or git add [filename]
    2.use command: git -m commit "[your comment]"
-   3.use command: git push  Or gp
+   3.use command: git push  
 Go to this link if you want more detail of github: https://www.youtube.com/watch?v=1JuYQgpbrW0&t=479s
     
