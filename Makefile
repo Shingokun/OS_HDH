@@ -53,7 +53,17 @@ $(OBJ)/%.o: %.c ${HEADER} $(OBJ)
 $(OBJ):
 	mkdir -p $(OBJ)
 
+test:
+	@echo "Running tests..."
+	./os sched
+	./os sched_0
+	./os sched_1
+	./os os_sc
+	./os os_syscall
+	./os os_syscall_list
+
 clean:
 	rm -f $(SRC)/*.lst
 	rm -f $(OBJ)/*.o os sched mem
 	rm -rf $(OBJ)
+
