@@ -15,18 +15,15 @@
  #include "libmem.h"
  #include <stdlib.h>
  
- // Định nghĩa cấu trúc đơn giản cho tiến trình
  struct simple_proc {
-     uint32_t pid;          // ID của tiến trình
-     char path[100];        // Tên đường dẫn (proc name)
-     int pc;                // Program counter
-     struct simple_proc *next; // Con trỏ đến tiến trình tiếp theo
+     uint32_t pid;          
+     char path[100];        
+     int pc;                
+     struct simple_proc *next; 
  };
- 
- // Danh sách tĩnh các tiến trình (thay thế mlq_ready_queue)
+  
  static struct simple_proc *proc_list = NULL;
- 
- // Hàm thêm tiến trình vào danh sách (giả lập khi tiến trình được tải)
+  
  void add_process(uint32_t pid, const char *path) {
      struct simple_proc *new_proc = (struct simple_proc *)malloc(sizeof(struct simple_proc));
      new_proc->pid = pid;
@@ -36,8 +33,7 @@
      new_proc->next = proc_list;
      proc_list = new_proc;
  }
- 
- // Hàm xóa tiến trình khỏi danh sách
+  
  void remove_process(struct simple_proc *proc_to_remove) {
      struct simple_proc *curr = proc_list;
      struct simple_proc *prev = NULL;
@@ -56,37 +52,31 @@
          curr = curr->next;
      }
  }
- 
- // Hàm chính của system call killall
+  
  int __sys_killall(struct pcb_t *caller, struct sc_regs* regs)
  {
-     char proc_name[100] = {0}; // Khởi tạo mảng rỗng
+     char proc_name[100] = {0};  
      uint32_t data;
- 
-     // Lấy memory region ID từ thanh ghi a1
-     uint32_t memrg = regs->a1;
- 
-     // Giả lập thêm tiến trình vào danh sách (dựa trên caller hoặc thông tin hệ thống)
-     // Trong thực tế, thông tin này sẽ được lấy từ bộ lập lịch, nhưng ở đây ta giả lập
+  
+     uint32_t memrg = regs->a1; 
      if (proc_list == NULL) {
-         add_process(caller->pid, "sc2"); // Giả lập tiến trình sc2
+         add_process(caller->pid, "sc2");  
      }
- 
-     /* Lấy tên chương trình từ vùng bộ nhớ */
+  
      int i = 0;
      int read_result;
      while (i < 99) {
          read_result = libread(caller, memrg, i, &data);
-         if (read_result != 0) { // Lỗi khi đọc
+         if (read_result != 0) {  
              printf("Error: libread failed with code %d at offset %d for memregionid %d\n", 
                     read_result, i, memrg);
              return -1;
          }
-         if (data == (uint32_t)-1) { // Kết thúc chuỗi
+         if (data == (uint32_t)-1) { 
              proc_name[i] = '\0';
              break;
          }
-         if (data < 32 || data > 126) { // Ký tự không phải ASCII hiển thị được
+         if (data < 32 || data > 126) {  
              printf("Error: Invalid character (0x%x) at offset %d for memregionid %d\n", 
                     data, i, memrg);
              return -1;
@@ -94,7 +84,7 @@
          proc_name[i] = (char)data;
          i++;
      }
-     proc_name[99] = '\0'; // Đảm bảo chuỗi kết thúc bằng null
+     proc_name[99] = '\0';  
  
      if (i == 0 && proc_name[0] == '\0') {
          printf("Error: Could not retrieve process name from memregionid %d\n", memrg);
@@ -102,19 +92,18 @@
      }
  
      printf("The procname retrieved from memregionid %d is \"%s\"\n", memrg, proc_name);
- 
-     /* Duyệt qua danh sách tiến trình đơn giản */
+  
      int terminated_count = 0;
      struct simple_proc *curr = proc_list;
      struct simple_proc *next = NULL;
  
      while (curr != NULL) {
-         next = curr->next; // Lưu con trỏ tiếp theo trước khi xóa
+         next = curr->next; 
          if (strcmp(curr->path, proc_name) == 0) {
              printf("Terminating process with PID %d and name %s\n",
                     curr->pid, curr->path);
              
-             remove_process(curr); // Xóa tiến trình khỏi danh sách
+             remove_process(curr); 
              terminated_count++;
          }
          curr = next;
@@ -126,5 +115,5 @@
          printf("Terminated %d process(es) with name %s\n", terminated_count, proc_name);
      }
  
-     return 0; // Trả về 0 nếu thành công
+     return 0; 
  }
