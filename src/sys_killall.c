@@ -18,15 +18,16 @@
  
  int __sys_killall(struct pcb_t *caller, struct sc_regs* regs)
  {
+    //lấy địa chỉ vùng nhớ từ thanh ghi a1 để xóa
     addr_t region_id = regs->a1;
     addr_t mem_region = caller->regs[region_id];
     if (!mem_region) {
         return -1;  
     }
  
+    //đọc tên tiến trình từ vùng nhớ
     char target_name[100] = {0};  
     int idx = 0;
-     
     while (idx < 99) {
         char c;
         if (MEMPHY_read(caller->mram, mem_region + idx, &c) != 0) {
@@ -37,22 +38,25 @@
     }
     target_name[idx] = '\0';  
 
+    //duyệt danh sách tiến trình đang chạy
     int killed = 0;
-     
+    
     if (caller->running_list) {
         struct pcb_t* process;
         int i = 0;
-        
+
         while (i < caller->running_list->size) {
             process = caller->running_list->proc[i];
-            
+
+            // kiểm tra tên tiến trình, trùng thì cooked
             if (process && strcmp(process->path, target_name) == 0) {
-               
+
                 for (int j = i; j < caller->running_list->size - 1; j++) {
                     caller->running_list->proc[j] = caller->running_list->proc[j + 1];
                 }
                 caller->running_list->size--;
-          
+                
+            //giải phóng bộ nhớ trong pcb
                 if (process->code) free(process->code);
                 if (process->page_table) free(process->page_table);
 #ifdef MM_PAGING
