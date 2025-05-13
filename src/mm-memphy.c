@@ -163,6 +163,13 @@ int MEMPHY_dump(struct memphy_struct *mp)
   /*TODO dump memphy contnt mp->storage
    *     for tracing the memory content
    */
+  for (int i = 0; i < mp->maxsz; i++) {
+      if (mp->storage[i] != 0) {
+         printf("BYTE %08x: %d\n", i, mp->storage[i]);
+         //printf("BYTE: %08lx %d\n", (unsigned long)(mp->storage + i), mp->storage[i]);
+         //printf("BYTE %p: %d\n", (void *)(mp->storage + i), mp->storage[i]);
+      }
+   }
    return 0;
 }
 
